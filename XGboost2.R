@@ -47,7 +47,7 @@ classifier = xgboost(data = as.matrix(training_set[-6]),
 y_pred = predict(classifier, newdata = as.matrix(test_set[-6]))
 y_pred = (y_pred >= 0.5)
 
-# Making the Confusion Matrix/not working for some reason
+# Making the Confusion Matrix
 
 cm = table(as.matrix(test_set[, 6]), y_pred)
 

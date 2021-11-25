@@ -56,11 +56,10 @@ xgb.save(classifier, "xgboost.model")
 y_pred1 = predict(classifier1, newdata = as.matrix(test_set[-6]))
 y_pred1 = (y_pred1 >= 0.5)
 
-y_pred2 = predict(classifier1, newdata = as.matrix(test_set[-6]))
-y_pred2 = (y_pred2 >= 0.5)
+
 # Making the Confusion Matrix
 cm1 = table(as.matrix(test_set[, 6]), y_pred1)
-cm2 = table(as.matrix(test_set[, 6]), y_pred2)
+
 
 
 cm1

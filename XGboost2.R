@@ -17,7 +17,7 @@ which(colnames(mytrain) == "AsthmaStatus")
 
 # Create new dataset
 
-trainingset <-  mytrain[c(-509)]
+trainingset <-  mytrain[c(-509,-7,-8)]
 dim(trainingset)
 head(trainingset)
 training_set$BMI <- log(training_set$BMI)
@@ -53,21 +53,23 @@ xgb.save(classifier, "xgboost.model")
 
 # Predicting the Test set results
  
-y_pred1 = predict(classifier1, newdata = as.matrix(test_set[-6]))
+y_pred1 = predict(classifier1, newdata = as.matrix(mytest2))
 y_pred1 = (y_pred1 >= 0.5)
 
-
+y_pred2 = predict(classifier1, newdata = as.matrix(test_set[-6]))
+y_pred2 = (y_pred2 >= 0.5)
 # Making the Confusion Matrix
-cm1 = table(as.matrix(test_set[, 6]), y_pred1)
+cm2 = table(as.matrix(test_set[, 6]), y_pred2)
 
-
-
-cm1
+cm2
 
 
 #Analyzing the data
 
 install.packages('vip')
+vip(classifier, num_features = 10)  # 10 is the default
+
+
 
 install.packages("DiagrammeR")
 install.packages("Ckmeans.1d.dp")

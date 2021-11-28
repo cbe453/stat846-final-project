@@ -137,6 +137,8 @@ xgb.plot.shap(
 
 # Applying k-Fold Cross Validation
 #install.packages('caret')
+library(caret)
+
 # Model Acurracy
 library(caret)
 folds = createFolds(training_set$AsthmaStatus, k = 5)

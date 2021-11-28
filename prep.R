@@ -18,7 +18,7 @@ install.packages("DiagrammeR")
 library(DiagrammeR)
 
 # Data Pre processing
-traindata <-  mytrain[c(-509,-7,-8,-4)] 
+traindata <-  mytrain[c(-509,-7,-8,)] 
 head(traindata)
 summary(traindata)
 dim(traindata)

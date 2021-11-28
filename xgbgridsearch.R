@@ -53,50 +53,6 @@ xgb_caret <- train(x = train_set[-5], y = train_set$AsthmaStatus,
                                           min_child_weight = c(0, 20)))
 confusionMatrix(data = train_set[-5], train_set$AsthmaStatus)
 
-#Important featture
-importance_matrix <- xgb.importance(model = classifier)
-print(importance_matrix$Gain)
-print(importance_matrix$Importance)
-print(importance_matrix$Frequency)
-xgb.plot.importance(importance_matrix = importance_matrix)
-
-#Trees from XGBoost
-xgb.plot.tree(model = classifier)
 
 
-# Predicting the Test set results
-y_pred = predict(xgb_caret, newdata = as.matrix(test_set[-5]))
-y_pred = (y_pred >= 0.5)
-
-# Making the Confusion Matrix
-cm = table(as.matrix(test_set[, -5]),as.matrix(y_pred))
-
-
-
-mean(test_set[,5] == y_pred)
-mean(test_set[,5] != y_pred)
-
-table(y_pred)
-# Applying k-Fold Cross Validation
-#install.packages('caret')
-#install.packages('dplyr')
-
-library(caret)
-library(dplyr)
-
-folds = createFolds(train_set$AsthmaStatus, k = 10)
-cv = lapply(folds, function(x) {
-  training_fold = train_set[-x, ]
-  test_fold = train_set[x, ]
-  classifier = xgboost(data = as.matrix(train_set[-5]), 
-                       label = train_set$AsthmaStatus, 
-                       nrounds = 20)
-  y_pred = predict(classifier, newdata = as.matrix(test_fold[-5]))
-  y_pred =(y_pred >= 0.5)
-  cm = table(as.matrix(test_fold[, 5]), y_pred)
-  accuracy = (cm[1,1] + cm[2,2]) / (cm[1,1] + cm[2,2] + cm[1,2] + cm[2,1])
-  return(accuracy)
-})
-accuracy = mean(as.numeric(cv))
-accuracy
 

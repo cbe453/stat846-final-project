@@ -20,7 +20,6 @@ which(colnames(mytrain) == "AsthmaStatus")
 trainingset <-  mytrain[c(-509,-7,-8)]
 dim(trainingset)
 head(trainingset)
-training_set$BMI <- log(training_set$BMI)
 hist(traindata$BMI)
 hist(traindata$Age)
 

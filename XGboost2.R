@@ -6,6 +6,7 @@
 # Data Management
 
 load("~/Stats_447/MLP/train (2).rda")
+load("~/Stats_447/MLP/test (2).rda")
 head(mytrain)
 summary(mytrain)
 dim(mytrain)
@@ -16,7 +17,6 @@ which(colnames(mytrain) == "AsthmaStatus")
 
 
 # Create new dataset
-
 trainingset <-  mytrain[c(-509,-7,-8)]
 dim(trainingset)
 head(trainingset)
@@ -26,7 +26,6 @@ hist(traindata$Age)
 
 
 # Splitting the dataset into the Training set and Test set**
-
 #install.packages('caTools')
 library(caTools)
 set.seed(2021)
@@ -38,12 +37,10 @@ test_set = subset(trainingset, split == FALSE)
 training_set$BMI <- log(training_set$BMI)
 test_set$BMI <- log(test_set$BMI)
 
-
 # Fitting XGBoost to the Training set
 # install.packages('xgboost')
 
 library(xgboost)
-
 classifier1 = xgboost(data = as.matrix(training_set[-6]), 
                      label = training_set$AsthmaStatus, nrounds = 200,
                      objective= "binary:logistic")
@@ -51,26 +48,20 @@ classifier1 = xgboost(data = as.matrix(training_set[-6]),
 xgb.save(classifier, "xgboost.model")
  xgb.load('xgboost.model')
 
-# Predicting the Test set results
- 
-y_pred1 = predict(classifier1, newdata = as.matrix(mytest2))
+# Predicting the Test set/testset results
+y_pred1 = predict(classifier1, newdata = as.matrix(mytest2)) 
 y_pred1 = (y_pred1 >= 0.5)
 
 y_pred2 = predict(classifier1, newdata = as.matrix(test_set[-6]))
 y_pred2 = (y_pred2 >= 0.5)
+
 # Making the Confusion Matrix
 cm2 = table(as.matrix(test_set[, 6]), y_pred2)
-
 cm2
 
 
 #Analyzing the data
-
 install.packages('vip')
-vip(classifier, num_features = 10)  # 10 is the default
-
-
-
 install.packages("DiagrammeR")
 install.packages("Ckmeans.1d.dp")
 
@@ -87,13 +78,9 @@ importance_matrix <- xgb.importance(model = classifier1)
 print(importance_matrix$Gain)
 print(importance_matrix$Importance)
 print(importance_matrix$Frequency)
-xgb.plot.importance(importance_matrix = importance_matrix)
-xgb.plot.importance(importance_matrix = importanceRaw)
-xgb.plot.tree(model = classifier, trees = 1, 
-              plot_width = 1000, plot_height = 1000)
 sum(importance_matrix$Gain)  
 
-
+#XGBoost importance plot
 xgb.ggplot.importance(
   importance_matrix = importance_matrix,
   top_n = 20,
@@ -103,7 +90,6 @@ xgb.ggplot.importance(
 )
 
 #Model complexity
-
 xgb.ggplot.deepness(
   model = classifier1,
   which = c("2x1", "max.depth", "med.depth", "med.weight")
@@ -150,16 +136,9 @@ xgb.plot.shap(
   plot = TRUE,
 )
 
-
-
-
 # Applying k-Fold Cross Validation
 #install.packages('caret')
-
 # Model Acurracy
-
-
-
 library(caret)
 folds = createFolds(training_set$AsthmaStatus, k = 5)
 cv = lapply(folds, function(x) {
@@ -173,20 +152,10 @@ cv = lapply(folds, function(x) {
   accuracy = (cm[1,1] + cm[2,2]) / (cm[1,1] + cm[2,2] + cm[1,2] + cm[2,1])
   return(accuracy)
 })
-
-
-
 accuracy = mean(as.numeric(cv))
 accuracy
 
-#The Cross validation accuracy is [1] 0.9070563
-
-
-
-
-
 # Model Precision
-
 folds = createFolds(training_set$AsthmaStatus, k = 5)
 cv = lapply(folds, function(x) {
   training_fold = training_set[-x, ]
@@ -199,21 +168,10 @@ cv = lapply(folds, function(x) {
  precision = (cm[1,1])/(cm[1,1] + cm[1,2])
   return(precision)
 })
-
-
-
-
 precision = mean(as.numeric(cv))
 precision
 
-
-# The Cross validation precision is [1] 0.9995364
-
-
-
-
 # Model Recall
-
 folds = createFolds(training_set$AsthmaStatus, k = 5)
 cv = lapply(folds, function(x) {
   training_fold = training_set[-x, ]
@@ -227,17 +185,10 @@ recall = (cm[1,1])/ (cm[1,1] + cm[2,1])
 return(recall)
 })
 
-
 recall = mean(as.numeric(cv))
 recall
 
-#The Cross validation recall is [1] 0.9033436
-
-
-
-
 # Model fscore
-
 folds = createFolds(training_set$AsthmaStatus, k = 5)
 cv = lapply(folds, function(x) {
   training_fold = training_set[-x, ]
@@ -250,12 +201,10 @@ cv = lapply(folds, function(x) {
 fscore = 2 * ((precision * recall)/(precision + recall))
 return(fscore)
 })
-
-
 fscore = mean(as.numeric(cv))
 fscore
 
-#The Cross validation fcore is [1] 0.9490087
+
 
   
   

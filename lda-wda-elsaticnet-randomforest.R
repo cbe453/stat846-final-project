@@ -1,91 +1,111 @@
-rm(list = ls())
-# reading data
-setwd("~/Desktop/masters/stat846/final-project/")
-traindata <- get(load("train.rda"))
-head(traindata)
-testdata <- get(load("test.rda"))
-head(testdata,2)
-# check the characteristics of the data
-table(traindata[,13])
+# Qi Zhao and Connor Burbridge 
+rm(list = ls()) 
 
-# create a new data set by deleting  COPD, Cancer, Patid from traindata
-mytrain=traindata[-6][-6][-6][-506]
-mytrain$case=traindata$AsthmaStatus
-mytrain=data.frame(mytrain)
+# reading data. Put the test.rda and train.rad in the same folder with the R file. 
+traindata <- get(load("train.rda")) 
+head(traindata) 
+testdata <- get(load("test.rda")) 
+head(testdata,2) 
 
-# check the new data set
-names(mytrain)
+# create a new data set by deleting  COPD, Cancer, Patid from traindata 
+mytrain=traindata[-6][-6][-6][-506] 
+mytrain$case=traindata$AsthmaStatus 
+mytrain=data.frame(mytrain) 
 
-# Feature selection run by Qi using Lasso
-library(Matrix)
-library(glmnet)
-lasso=glmnet(mytrain[,1:505],mytrain[,506],alpha = 1)
-#the cross-validation error as a function of 𝜆
-cv_lasso=cv.glmnet(as.matrix(mytrain[,1:505]),mytrain[,506],alpha=1)
-#find the best model
-bestlasso=cv_lasso$lambda.min
-#Which gene type has a coefficient based on lasso
-siglassoc = predict(lasso, s=bestlasso, type = 'coefficients')@i
-siglassocname = predict(lasso, s=bestlasso, type = 'coefficients')
-siglassocname
-siglassoc
+# check the new data set 
+names(mytrain) 
 
-# find out the important predictors by t-test
-myresult=rep(NA,505)
-for (ii in 1:505) {
-  myresult[ii]=t.test(mytrain[,ii]~mytrain$case)$p.value
-}
-sig=which(myresult<(0.05/505))
+## Feature selection run by Qi using t-test 
+myresult=rep(NA,505) 
+for (ii in 1:505) { 
+  myresult[ii]=t.test(mytrain[,ii]~mytrain$case)$p.value 
+} 
+sig=which(myresult<(0.05/505)) 
 
-# result of t-test
-sig
+# export the important predictors based on the t-test result 
+colnames(mytrain[,sig]) 
 
-bothsig=intersect(siglassoc,sig)
-bothsig
-
-library(caret)
-mydata=mytrain[, bothsig] # sig for t-test, sigloassoc for lasso, bothsig for overlapping features
-mydata
+# create a new data set according to the important predictors 
+mydata=mytrain[,sig] 
 mydata$case=mytrain$case
-set.seed(2021)
-train <- createDataPartition(mydata$case, p = .80, 
-                             list = FALSE, 
-                             times = 1)
-mytr.train <- mydata[train, ]
-mytr.test <- mydata[-train, ]
-mytr.train
 
-# LDA run by Qi
-library("PRROC")
-library(MASS)
-lda.fit <- lda(case~., mytr.train)
-lda.fit
-lda.pred <- predict(lda.fit, mytr.test)
-names(lda.pred)
-lda.class <- lda.pred$class
+# Feature selection run by Qi using Lasso 
+library(Matrix) 
+library(glmnet) 
+lasso=glmnet(mytrain[,1:505],mytrain[,506],alpha = 1) 
 
-#Confusion Matrix 
-table(lda.class, mytr.test$case)
-ldaMis = mean(lda.class != mytr.test$case)
-ldaCM = confusionMatrix(lda.class, as.factor(mytr.test$case))
+#the cross-validation error as a function of 𝜆 
+cv_lasso=cv.glmnet(as.matrix(mytrain[,1:505]),mytrain[,506],alpha=1) 
 
-set.seed(2021)
+#find the best model 
+bestlasso=cv_lasso$lambda.min 
 
-# QDA run by Qi
-qda.fit <- qda(case~., mytr.train)
-qda.fit
+#Which gene type has a coefficient based on lasso 
+siglassoc = predict(lasso, s=bestlasso, type = 'coefficients')@i 
+siglassocname = predict(lasso, s=bestlasso, type = 'coefficients') 
+siglassocname 
+siglassoc 
 
-# Fitted value
-qda.pred <- predict(qda.fit, mytr.test)
-typeof(qda.pred)
-qda.class <- qda.pred$class
-qda.class
+# export the important predictors based on Lasso 
+colnames(mytrain[,siglassoc]) 
 
-#Confusion Matrix For Training Error 
-table(qda.class, mytr.test$case)
+myresult=rep(NA,505) 
+for (ii in 1:505) { 
+  myresult[ii]=t.test(mytrain[,ii]~mytrain$case)$p.value 
+} 
 
-qdaMis = mean(qda.class != mytr.test$case)
-qdaCM = confusionMatrix(qda.class, as.factor(mytr.test$case))
+sig=which(myresult<(0.05/505)) 
+
+# result of t-test 
+sig 
+
+# identify overalpping features between t-test and Lasso 
+bothsig=intersect(siglassoc,sig) 
+bothsig 
+
+# # split the train data set to two parts: train data (80%) and test data (20%) 
+library(caret) 
+
+# sig for t-test, siglassoc for Lasso predictors, bothsig for overlapping subset from both 
+mydata=mytrain[, bothsig]   
+mydata 
+mydata$case=mytrain$case 
+set.seed(2021) 
+train <- createDataPartition(mydata$case, p = .80,  
+                             list = FALSE,  
+                             times = 1) 
+mytr.train <- mydata[train, ] 
+mytr.test <- mydata[-train, ] 
+
+# LDA run by Qi based on lasso 
+library("PRROC") 
+library(MASS) 
+lda.fit <- lda(case~., mytr.train) 
+lda.fit 
+lda.pred <- predict(lda.fit, mytr.test) 
+names(lda.pred) 
+lda.class <- lda.pred$class 
+
+#Confusion Matrix  
+table(lda.class, mytr.test$case) 
+ldaMis = mean(lda.class != mytr.test$case) 
+ldaCM = confusionMatrix(lda.class, as.factor(mytr.test$case)) 
+
+# QDA run by Qi 
+set.seed(2021) 
+qda.fit <- qda(case~., mytr.train) 
+qda.fit 
+
+# Fitted value 
+qda.pred <- predict(qda.fit, mytr.test) 
+typeof(qda.pred) 
+qda.class <- qda.pred$class 
+qda.class 
+
+#Confusion Matrix For Training Error  
+table(qda.class, mytr.test$case) 
+qdaMis = mean(qda.class != mytr.test$case) 
+qdaCM = confusionMatrix(qda.class, as.factor(mytr.test$case)) 
 
 # Elastic Net run by Connor
 # Elastic net requires a factor as input outcomes

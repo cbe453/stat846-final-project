@@ -49,16 +49,6 @@ siglassoc
 # export the important predictors based on Lasso 
 colnames(mytrain[,siglassoc]) 
 
-myresult=rep(NA,505) 
-for (ii in 1:505) { 
-  myresult[ii]=t.test(mytrain[,ii]~mytrain$case)$p.value 
-} 
-
-sig=which(myresult<(0.05/505)) 
-
-# result of t-test 
-sig 
-
 # identify overalpping features between t-test and Lasso 
 bothsig=intersect(siglassoc,sig) 
 bothsig 

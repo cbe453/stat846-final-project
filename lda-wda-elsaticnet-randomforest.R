@@ -143,6 +143,7 @@ vip(qda.fit, num_features = 10)
 vip(elasticNet, num_features = 20)
 vip(randomForest, num_features = 10)
 
+# Code do present confusion matrices and misclassification rates for the above models
 ldaCM[2]
 ldaMis
 qdaCM[2]

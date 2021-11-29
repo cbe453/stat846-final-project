@@ -125,27 +125,17 @@ testData = mytest[,siglassoc]
 testPredict = predict(elasticNet, newdate = testData)
 
 # Random Forest
-myrfdata=mytrain[, bothsig]
-myrfdata$case=mytrain$case
-set.seed(2021)
-rftrain <- createDataPartition(mydata$case, p = .80, 
-                             list = FALSE, 
-                             times = 1)
-myrftr.train <- myrfdata[rftrain, ]
-myrftr.test <- myrfdata[-rftrain, ]
-
-
 library("randomForest")
 
-ncol(myrftr.train)
-observations = as.matrix(myrftr.train[,1:28])
-forestModel = randomForest(as.matrix(myrftr.train[,1:28]), as.factor(myrftr.train$case), ntree = 250)
+ncol(mytr.train)
+observations = as.matrix(mytr.train[,1:28])
+forestModel = randomForest(as.matrix(mytr.train[,1:28]), as.factor(mytr.train$case), ntree = 250)
 forestModel
-forestModel.pred = predict(forestModel, newdata = myrftr.test[,1:28])
+forestModel.pred = predict(forestModel, newdata = mytr.test[,1:28])
 forestModel.pred
 
 rfMis = mean(forestModel.pred != mytr.test$case)
-rfCM = confusionMatrix(forestModel.pred, as.factor(myrftr.test$case))[2]
+rfCM = confusionMatrix(forestModel.pred, as.factor(mytr.test$case))[2]
 
 library("vip")
 vip(lda.fit, num_features = 10)

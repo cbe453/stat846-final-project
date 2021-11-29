@@ -68,7 +68,6 @@ mytr.train <- mydata[train, ]
 mytr.test <- mydata[-train, ] 
 
 # LDA run by Qi based on lasso 
-library("PRROC") 
 library(MASS) 
 lda.fit <- lda(case~., mytr.train) 
 lda.fit 

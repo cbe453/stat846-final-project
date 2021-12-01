@@ -55,8 +55,7 @@ y_pred2 = predict(classifier1, newdata = as.matrix(test_set[-6]))
 y_pred2 = (y_pred2 >= 0.5)
 
 # Making the Confusion Matrix
-cm2 = table(as.matrix(test_set[, 6]), y_pred2)
-cm2
+confusionMatrix(as.factor(as.numeric(y_pred2)), as.factor(as.numeric(test_set$AsthmaStatus)))
 
 
 #Analyzing the data
